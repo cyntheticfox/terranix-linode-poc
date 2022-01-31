@@ -41,3 +41,5 @@ terraform.rc
 # Ignore build output link
 result@
 
+# Temp
+.terraform.lock.hcl
