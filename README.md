@@ -38,6 +38,14 @@ nix run .#destroy
 ## Important Notes
 
 - This configuration is designed to run Terraform _locally_, not with Terraform Cloud, so _you_ are responsible for managing the `.tfstate` files. There is an explicit Git ignore for such.
-- Terraform Cloud example pending
-- Example with configuration through [tweag/terraform-nixos](https://github.com/tweag/terraform-nixos) pending
+- When using a custom image, _Linode will overwrite your shadow file_. As such, the `root_pass` variable defined in the `config.nix` file will override any password you provide in the image configuration. For this reason, I just go ahead and define it as `null` in `config/image-base.nix`.
+- Take care not to commit plaintext passwords and API tokens to public repositories. The `root_pass` one is in plaintext in this repository for example purposes. 
+
+## Development/TODOs
+
+- Add pre-commit stuff
+- Terraform Cloud example
+- Example with configuration through [tweag/terraform-nixos](https://github.com/tweag/terraform-nixos)
+  - Will require using advanced module configuration for alternative disk structures
+- Add more checks? (Maybe linters? Not sure)
 
