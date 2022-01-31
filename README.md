@@ -1,6 +1,6 @@
 # Terranix Linode POC Flake
 
-The following is a Proof-of-Concept (POC) for using Linode with NixOS and Terraform, specifically using Terranix, and some patches to `nixpkgs` to provide a Linode-compatible image builder for upload.
+The following is a Proof-of-Concept (POC) for using Linode with NixOS and Terraform, specifically using [Terranix](https://github.com/terranix/terranix), and some patches to `nixpkgs` to provide a Linode-compatible image builder for upload.
 
 This base configuration provides no ssh connectivity, and provisions the following:
 
