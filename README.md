@@ -23,16 +23,22 @@ Usage should be as simple as using `nix run .` to run the default application, w
 
 ### Sub-Command: Apply
 
-You can explicitly apply the Terranix configuration with
+You can explicitly apply the Terranix configuration with:
 
 ```shell
 nix run .#apply
 ```
 
-You can then destroy the built configuration with
+You can then destroy the built configuration with:
 
 ```shell
 nix run .#destroy
+```
+
+If you just want to check the generated configuration, you can run:
+
+```shell
+nix flake check .#validTerraform  
 ```
 
 ## Important Notes
@@ -48,4 +54,8 @@ nix run .#destroy
 - Example with configuration through [tweag/terraform-nixos](https://github.com/tweag/terraform-nixos)
   - Will require using advanced module configuration for alternative disk structures
 - Add more checks? (Maybe linters? Not sure)
+- Merge Linode image into [NixOS/nixpkgs](https://github.com/NixOS/nixpkgs)
+  - Merge Linode image generator into [nix-community/nixos-generators](https://github.com/nix-community/nixos-generators)
+- Backport Linode image to previous release branches
+- Write Terranix module for Linode?
 
