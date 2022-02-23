@@ -45,10 +45,12 @@ nix flake check .#validTerraform
 
 - This configuration is designed to run Terraform _locally_, not with Terraform Cloud, so _you_ are responsible for managing the `.tfstate` files. There is an explicit Git ignore for such.
 - When using a custom image, _Linode will overwrite your shadow file_. As such, the `root_pass` variable defined in the `config.nix` file will override any password you provide in the image configuration. For this reason, I just go ahead and define it as `null` in `config/image-base.nix`.
+- Linode will default to looking for their special kernel to boot, so you must currently manually go in and change the boot configuration to "GRUB 2" and disable filesystem/boot helpers.
 - Take care not to commit plaintext passwords and API tokens to public repositories. The `root_pass` one is in plaintext in this repository for example purposes. 
 
 ## Development/TODOs
 
+- Change configuration to use "advanced configuration" to allow setting up without manually editing the boot configuration.
 - Add pre-commit stuff
 - Terraform Cloud example
 - Example with configuration through [tweag/terraform-nixos](https://github.com/tweag/terraform-nixos)
