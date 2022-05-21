@@ -15,7 +15,7 @@ Before anything, ensure you define the `LINODE_TOKEN` variable, either in the fi
 export TF_VAR_LINODE_TOKEN=<YOUR_API_KEY_HERE>
 ```
 
-It is also recommended that you change the default root password in the `config.nix` file, as this repository is meant to be publicly available. While the default configuration I provide does disable the OpenSSH server enabled by default, it is still best practice to change passwords when possible.
+It is also recommended that you change the default root password in the `config/image-base.nix` file, as this repository is meant to be publicly available. While the default configuration I provide does disable the OpenSSH server enabled by default, it is still best practice to change passwords when possible.
 
 ## Usage
 
