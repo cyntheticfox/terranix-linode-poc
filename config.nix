@@ -74,10 +74,15 @@ in
 
       devices = {
         sda.disk_label = bootLabel;
-        sdb.volume_id = "\${linode_volume.nixos-test-swap}";
+        sdb.volume_id = "\${linode_volume.nixos-test-swap.id}";
       };
 
-      interfaces."eth0".purpose = "public";
+      interface = [
+        {
+          label = "eth0";
+          purpose = "public";
+        }
+      ];
     };
   };
 }
