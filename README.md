@@ -48,10 +48,8 @@ nix flake check .#validTerraform
 
 ## Development/TODOs
 
-- Add pre-commit stuff
 - Terraform Cloud example
 - Example with configuration through [tweag/terraform-nixos](https://github.com/tweag/terraform-nixos)
-- Add more checks? (Maybe linters? Not sure)
 - Merge Linode image into [NixOS/nixpkgs](https://github.com/NixOS/nixpkgs)
   - Merge Linode image generator into [nix-community/nixos-generators](https://github.com/nix-community/nixos-generators)
 - Backport Linode image to previous release branches

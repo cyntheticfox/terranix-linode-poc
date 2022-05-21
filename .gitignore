@@ -40,6 +40,10 @@ terraform.rc
 ### Nix ###
 # Ignore build output link
 result@
+.direnv/
 
 # Temp
 .terraform.lock.hcl
+
+# pre-commit
+.pre-commit-config.yaml
