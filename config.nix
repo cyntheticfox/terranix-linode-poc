@@ -29,16 +29,10 @@ in
     file_path = img;
   };
 
-  resource.linode_volume.nixos-test-swap = {
-    label = "nixos-test_swap";
-    inherit region;
-    size = 1; # Integer size in GB;
-    tags = [ "nixos" "test-instances" "disk" "swap" ];
-  };
-
   resource.linode_instance.nixos-test =
     let
       bootLabel = "boot";
+      swapLabel = "swap";
     in
     {
     inherit region;
@@ -49,11 +43,18 @@ in
     type = "g6-nanode-1";
 
 
-    disk = {
-      label = bootLabel;
-      size = 3000; # Integer size in MB. Can't configure with a dynamic var due to type limitations. Kinda a Terranix oversight I guess.
-      image = "\${linode_image.nixos.id}";
-    };
+    disk = [
+      {
+        label = bootLabel;
+        size = 3000; # Integer size in MB. Can't configure with a dynamic var due to type limitations. Kinda a Terranix oversight I guess.
+        image = "\${linode_image.nixos.id}";
+      }
+      {
+        label = swapLabel;
+        size = 512; # Integer size in MB.
+        filesystem = "swap";
+      }
+    ];
 
     config = {
       label = "boot_config";
@@ -74,12 +75,11 @@ in
 
       devices = {
         sda.disk_label = bootLabel;
-        sdb.volume_id = "\${linode_volume.nixos-test-swap.id}";
+        sdb.disk_label = swapLabel;
       };
 
       interface = [
         {
-          label = "eth0";
           purpose = "public";
         }
       ];
