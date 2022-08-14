@@ -100,8 +100,6 @@
         ];
       };
 
-      devShell.x86_64-linux = self.devShells.x86_64-linux.default;
-
       packages.x86_64-linux.linode = nixos-generators.nixosGenerate {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [ ./config/image-base.nix ];
