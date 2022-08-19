@@ -30,60 +30,60 @@ in
       file_path = img;
     };
 
-  resource.linode_instance.nixos-test =
-    let
-      bootLabel = "boot";
-      swapLabel = "swap";
-    in
-    {
-      inherit region;
+  resource.linode_instance.nixos-test = {
+    inherit region;
 
-      label = "nixos-test";
-      group = "nixos";
-      tags = [ "nixos" "test-instances" ];
-      type = "g6-nanode-1";
+    label = "nixos-test";
+    group = "nixos";
+    tags = [ "nixos" "test-instances" ];
+    type = "g6-nanode-1";
+  };
 
+  resource.linode_instance_disk.boot = {
+    label = "boot";
+    linode_id = "\${linode_instance.nixos-test.id}";
+    size = 3000; # Integer size in MB. Can't configure with a dynamic var due to type limitations. Kinda a Terranix oversight I guess.
+    image = "\${linode_image.nixos.id}";
 
-      disk = [
-        {
-          label = bootLabel;
-          size = 3000; # Integer size in MB. Can't configure with a dynamic var due to type limitations. Kinda a Terranix oversight I guess.
-          image = "\${linode_image.nixos.id}";
-        }
-        {
-          label = swapLabel;
-          size = 512; # Integer size in MB.
-          filesystem = "swap";
-        }
-      ];
+    # WARN: Be sure to either set a root password here or set one in the NixOS config w/ `mutableUsers = false`
+    root_pass = "Thisisabadpassword123!";
+  };
 
-      config = {
-        label = "boot_config";
+  resource.linode_instance_disk.swap = {
+    label = "swap";
+    linode_id = "\${linode_instance.nixos-test.id}";
+    size = 512; # Integer size in MB.
+    filesystem = "swap";
+  };
 
-        # Found in https://api.linode.com/v4/linode/kernels?page=4
-        kernel = "linode/grub2";
+  resource.linode_instance_config.my-config = {
+    linode_id = "\${linode_instance.nixos-test.id}";
+    label = "boot_config";
+    booted = true;
 
-        # Had to pull from https://github.com/linode/terraform-provider-linode/blob/f8b80a1322d4f5afb24bfb318d216d4a2d630c27/linode/instance/schema_resource.go#L437
-        helpers = {
-          "updatedb_disabled" = false;
-          "distro" = false;
-          "modules_dep" = false;
-          "network" = false;
-          "devtmpfs_automount" = false;
-        };
+    # NOTE: Found in https://api.linode.com/v4/linode/kernels?page=4
+    kernel = "linode/grub2";
 
-        root_device = "/dev/sda";
-
-        devices = {
-          sda.disk_label = bootLabel;
-          sdb.disk_label = swapLabel;
-        };
-
-        interface = [
-          {
-            purpose = "public";
-          }
-        ];
-      };
+    # NOTE: Had to pull from https://github.com/linode/terraform-provider-linode/blob/f8b80a1322d4f5afb24bfb318d216d4a2d630c27/linode/instance/schema_resource.go#L437
+    helpers = {
+      devtmpfs_automount = false;
+      distro = false;
+      modules_dep = false;
+      network = false;
+      updatedb_disabled = false;
     };
+
+    root_device = "/dev/sda";
+
+    devices = {
+      sda.disk_id = "\${linode_instance_disk.boot.id}";
+      sdb.disk_id = "\${linode_instance_disk.swap.id}";
+    };
+
+    interface = [
+      {
+        purpose = "public";
+      }
+    ];
+  };
 }
