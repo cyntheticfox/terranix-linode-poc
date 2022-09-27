@@ -39,7 +39,7 @@ terraform.rc
 ### Other ignores
 ### Nix ###
 # Ignore build output link
-result@
+result
 .direnv/
 
 # Temp
