@@ -101,16 +101,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1664297997,
-        "narHash": "sha256-4owPEqUodwx86kV9ajr06zY1DfqfwHWFRS+Qz61zZJ0=",
-        "owner": "houstdav000",
+        "lastModified": 1676570994,
+        "narHash": "sha256-6y/vRBWzgXFfmiNLc2gwyWwAt3Rfy0wKmuMej8DCmGU=",
+        "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f374421c721166f1c69debdc223040c6b8dc21f9",
+        "rev": "fd00212f449f62cf5ec51dc782dae36572142140",
         "type": "github"
       },
       "original": {
-        "owner": "houstdav000",
-        "ref": "feature/linode-image",
+        "owner": "NixOS",
+        "ref": "release-22.11",
         "repo": "nixpkgs",
         "type": "github"
       }

@@ -2,11 +2,12 @@
   description = "A very basic flake";
 
   inputs = {
-    nixpkgs.url = "github:houstdav000/nixpkgs/feature/linode-image";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-22.11";
     flake-utils.url = "github:numtide/flake-utils";
 
     terranix = {
       url = "github:terranix/terranix";
+
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";
@@ -22,115 +23,125 @@
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   };
 
-  outputs = { self, ... }@inputs:
-    with inputs;
+  outputs = { self, flake-utils, nixpkgs, nixos-generators, pre-commit-hooks, terranix }:
+    nixpkgs.lib.recursiveUpdate
+      (flake-utils.lib.eachDefaultSystem
+        (system:
+          let
+            pkgs = nixpkgs.legacyPackages."${system}";
+            inherit (pkgs) terraform;
 
-    let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      inherit (pkgs) terraform;
-      terraformConfiguration = terranix.lib.terranixConfiguration {
-        system = "x86_64-linux";
-        modules = [
-          {
-            config._module.args = {
-              inherit self pkgs;
-              inherit (self) inputs outputs;
+            terraformConfiguration = terranix.lib.terranixConfiguration {
+              system = "x86_64-linux";
+
+              modules = [
+                {
+                  config._module.args = {
+                    inherit self pkgs;
+                    inherit (self) inputs outputs;
+                  };
+                }
+                ./config.nix
+              ];
             };
-          }
-          ./config.nix
-        ];
-      };
-    in
-    {
-      apps.x86_64-linux = {
-        default = self.apps.x86_64-linux.apply;
+          in
+          {
+            apps = {
+              default = self.apps."${system}".apply;
 
-        apply = {
-          type = "app";
-          program = builtins.toString (pkgs.writers.writeBash "apply" ''
-            # Remove old config.tf.json
-            if [[ -e config.tf.json ]]; then
-              rm -f config.tf.json
-            fi
+              apply = {
+                type = "app";
 
-            # Run the apply
-            cp ${terraformConfiguration} config.tf.json \
-              && ${terraform}/bin/terraform init \
-              && ${terraform}/bin/terraform apply -auto-approve
+                program = builtins.toString (pkgs.writers.writeBash "apply" ''
+                  # Remove old config.tf.json
+                  if [[ -e config.tf.json ]]; then
+                    rm -f config.tf.json
+                  fi
 
-            # Remove old config.tf.json and if successful
-            if [[ $? && -e config.tf.json ]]; then
-              rm -f config.tf.json
-            fi
-          '');
-        };
+                  # Run the apply
+                  cp ${terraformConfiguration} config.tf.json \
+                    && ${terraform}/bin/terraform init \
+                    && ${terraform}/bin/terraform apply -auto-approve
 
-        destroy = {
-          type = "app";
-          program = builtins.toString (pkgs.writers.writeBash "destroy" ''
-            # Remove old config.tf.json
-            if [[ -e config.tf.json ]]; then
-              rm -f config.tf.json
-            fi
+                  # Remove old config.tf.json and if successful
+                  if [[ $? && -e config.tf.json ]]; then
+                    rm -f config.tf.json
+                  fi
+                '');
+              };
 
-            # Run the destroy
-            cp ${terraformConfiguration} config.tf.json \
-              && ${terraform}/bin/terraform init \
-              && ${terraform}/bin/terraform destroy
+              destroy = {
+                type = "app";
 
-            # Remove old config.tf.json and if successful
-            if [[ $? && -e config.tf.json ]]; then
-              rm -f config.tf.json
-            fi
-          '');
-        };
-      };
+                program = builtins.toString (pkgs.writers.writeBash "destroy" ''
+                  # Remove old config.tf.json
+                  if [[ -e config.tf.json ]]; then
+                    rm -f config.tf.json
+                  fi
 
-      defaultApp.x86_64-linux = self.apps.x86_64-linux.apply;
+                  # Run the destroy
+                  cp ${terraformConfiguration} config.tf.json \
+                    && ${terraform}/bin/terraform init \
+                    && ${terraform}/bin/terraform destroy
 
-      devShells.x86_64-linux.default = pkgs.mkShell {
-        inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
+                  # Remove old config.tf.json and if successful
+                  if [[ $? && -e config.tf.json ]]; then
+                    rm -f config.tf.json
+                  fi
+                '');
+              };
+            };
 
-        nativeBuildInputs = with pkgs; [
-          terraform
+            devShells.default = pkgs.mkShell {
+              inherit (self.checks."${system}".pre-commit-check) shellHook;
 
-          # Formatting
-          nixpkgs-fmt
-          statix
-        ];
-      };
+              nativeBuildInputs = with pkgs; [
+                terraform
 
-      packages.x86_64-linux.linode = nixos-generators.nixosGenerate {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        modules = [ ./config/image-base.nix ];
-        format = "linode";
-      };
+                # Formatting
+                nixpkgs-fmt
+                statix
+              ];
+            };
 
-      checks.x86_64-linux = {
-        pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {
-          src = ./.;
-          hooks = {
-            nixpkgs-fmt.enable = true;
-            statix.enable = true;
+            checks = {
+              pre-commit-check = pre-commit-hooks.lib."${system}".run {
+                src = ./.;
+
+                hooks = {
+                  nixpkgs-fmt.enable = true;
+                  statix.enable = true;
+                };
+              };
+
+              validTerraform = pkgs.writers.writeBash "validate" ''
+                # Remove old config.tf.json
+                if [[ -e config.tf.json ]]; then
+                  rm -f config.tf.json
+                fi
+
+                # Run the destroy
+                cp ${terraformConfiguration} config.tf.json \
+                  && ${terraform}/bin/terraform init \
+                  && ${terraform}/bin/terraform validate
+
+                # Remove old config.tf.json and if successful
+                if [[ $? && -e config.tf.json ]]; then
+                  rm -f config.tf.json
+                fi
+              '';
+            };
+          }))
+      (
+        let
+          system = "x86_64-linux";
+        in
+        {
+          packages."${system}".linode = nixos-generators.nixosGenerate {
+            pkgs = nixpkgs.legacyPackages."${system}";
+            modules = [ ./config/image-base.nix ];
+            format = "linode";
           };
-        };
-
-        validTerraform = pkgs.writers.writeBash "validate" ''
-          # Remove old config.tf.json
-          if [[ -e config.tf.json ]]; then
-            rm -f config.tf.json
-          fi
-
-          # Run the destroy
-          cp ${terraformConfiguration} config.tf.json \
-            && ${terraform}/bin/terraform init \
-            && ${terraform}/bin/terraform validate
-
-          # Remove old config.tf.json and if successful
-          if [[ $? && -e config.tf.json ]]; then
-            rm -f config.tf.json
-          fi
-        '';
-      };
-    };
+        }
+      );
 }
